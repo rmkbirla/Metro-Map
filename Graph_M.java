@@ -1,7 +1,12 @@
 import java.util.*;
 import java.io.*;
 
+class MyPair {
+	String source;
+	String dest;
+}
 public class Graph_M {
+	
 	public class Vertex {
 		HashMap<String, Integer> nbrs = new HashMap<>();
 	}
@@ -13,11 +18,11 @@ public class Graph_M {
 	}
 
 	public int numVetex() {
-		return this.vtces.size();
+		return Graph_M.vtces.size();
 	}
 
 	public boolean containsVertex(String vname) {
-		return this.vtces.containsKey(vname);
+		return Graph_M.vtces.containsKey(vname);
 	}
 
 	public void addVertex(String vname) {
@@ -64,20 +69,20 @@ public class Graph_M {
 		Vertex vtx1 = vtces.get(vname1);
 		Vertex vtx2 = vtces.get(vname2);
 
-		if (vtx1 == null || vtx2 == null || vtx1.nbrs.containsKey(vname2)) {
+		if (vtx1 == null || vtx2 == null || (vtx1.nbrs.containsKey(vname2)&& vtx2.nbrs.containsKey(vname1))) {
 			return;
 		}
 
 		vtx1.nbrs.put(vname2, value);
 		vtx2.nbrs.put(vname1, value);
-	}
+	} 
 
 	public void removeEdge(String vname1, String vname2) {
 		Vertex vtx1 = vtces.get(vname1);
 		Vertex vtx2 = vtces.get(vname2);
 
 		// check if the vertices given or the edge between these vertices exist or not
-		if (vtx1 == null || vtx2 == null || !vtx1.nbrs.containsKey(vname2)) {
+		if (vtx1 == null || vtx2 == null || !(vtx1.nbrs.containsKey(vname2)&& vtx2.nbrs.containsKey(vname1))) {
 			return;
 		}
 
@@ -476,10 +481,51 @@ public class Graph_M {
 		return codes;
 	}
 
+	public  static MyPair returnStations(String codes[], BufferedReader reader) {
+		ArrayList<String> keys = new ArrayList<>(vtces.keySet());
+		System.out.println("\n1. TO ENTER SERIAL NO. OF STATIONS\n2. TO ENTER CODE OF STATIONS\n3. TO ENTER NAME OF STATIONS\n");
+					System.out.println("ENTER YOUR CHOICE:");
+					MyPair p1 = new MyPair();
+					try{
+						int ch = Integer.parseInt(reader.readLine());
+					int j;
+					
+					System.out.println("ENTER THE SOURCE AND DESTINATION STATIONS");
+					if (ch == 1) {
+						p1.source = keys.get(Integer.parseInt(reader.readLine()) - 1);
+						p1.dest = keys.get(Integer.parseInt(reader.readLine()) - 1);
+					} else if (ch == 2) {
+						String a, b;
+						a = (reader.readLine()).toUpperCase();
+						for (j = 0; j < keys.size(); j++)
+							if (a.equals(codes[j]))
+								break;
+						p1.source = keys.get(j);
+						b = (reader.readLine()).toUpperCase();
+						for (j = 0; j < keys.size(); j++)
+							if (b.equals(codes[j]))
+								break;
+						p1.dest = keys.get(j);
+					} else if (ch == 3) {
+						p1.source = reader.readLine();
+						p1.dest = reader.readLine();
+					} else {
+						System.out.println("Invalid choice");
+						System.exit(0);
+					}}catch(Exception e){
+                       System.exit(0);
+					}
+					return p1;
+				
+				}
+	
+
+
+
 	public static void main(String[] args) throws IOException {
 		Graph_M g = new Graph_M();
 		Create_Metro_Map(g);
-
+        
 		System.out.println("\n\t\t\t****WELCOME TO THE METRO APP*****");
 		// System.out.println("\t\t\t\t~~LIST OF ACTIONS~~\n\n");
 		// System.out.println("1. LIST ALL THE STATIONS IN THE MAP");
@@ -500,8 +546,8 @@ public class Graph_M {
 			System.out.println("\t\t\t\t~~LIST OF ACTIONS~~\n\n");
 			System.out.println("1. LIST ALL THE STATIONS IN THE MAP");
 			System.out.println("2. SHOW THE METRO MAP");
-			System.out.println("3. GET SHORTEST DISTANCE FROM A 'SOURCE' STATION TO 'DESTINATION' STATION");
-			System.out.println("4. GET SHORTEST TIME TO REACH FROM A 'SOURCE' STATION TO 'DESTINATION' STATION");
+			System.out.println("3. ALL STATIONS WITH CODE");
+			System.out.println("4. GET SHORTEST TIME TO REACH FROM A 'SOURCE' STATION TO 'DESTINATION' STATION ");
 			System.out.println(
 					"5. GET SHORTEST PATH (DISTANCE WISE) TO REACH FROM A 'SOURCE' STATION TO 'DESTINATION' STATION");
 			System.out.println(
@@ -528,71 +574,33 @@ public class Graph_M {
 					break;
 
 				case 3:
-					ArrayList<String> keys = new ArrayList<>(vtces.keySet());
+					
 					String codes[] = printCodelist();
-					System.out.println(
-							"\n1. TO ENTER SERIAL NO. OF STATIONS\n2. TO ENTER CODE OF STATIONS\n3. TO ENTER NAME OF STATIONS\n");
-					System.out.println("ENTER YOUR CHOICE:");
-					int ch = Integer.parseInt(inp.readLine());
-					int j;
-
-					String st1 = "", st2 = "";
-					System.out.println("ENTER THE SOURCE AND DESTINATION STATIONS");
-					if (ch == 1) {
-						st1 = keys.get(Integer.parseInt(inp.readLine()) - 1);
-						st2 = keys.get(Integer.parseInt(inp.readLine()) - 1);
-					} else if (ch == 2) {
-						String a, b;
-						a = (inp.readLine()).toUpperCase();
-						for (j = 0; j < keys.size(); j++)
-							if (a.equals(codes[j]))
-								break;
-						st1 = keys.get(j);
-						b = (inp.readLine()).toUpperCase();
-						for (j = 0; j < keys.size(); j++)
-							if (b.equals(codes[j]))
-								break;
-						st2 = keys.get(j);
-					} else if (ch == 3) {
-						st1 = inp.readLine();
-						st2 = inp.readLine();
-					} else {
-						System.out.println("Invalid choice");
-						System.exit(0);
-					}
-
-					HashMap<String, Boolean> processed = new HashMap<>();
-					if (!g.containsVertex(st1) || !g.containsVertex(st2) || !g.hasPath(st1, st2, processed))
-						System.out.println("THE INPUTS ARE INVALID");
-					else
-						System.out.println("SHORTEST DISTANCE FROM " + st1 + " TO " + st2 + " IS "
-								+ g.dijkstra(st1, st2, false) + "KM\n");
+					//MyPair p= returnStations(codes, inp);
 					break;
-
+					
 				case 4:
-					System.out.print("ENTER THE SOURCE STATION: ");
-					String sat1 = inp.readLine();
-					System.out.print("ENTER THE DESTINATION STATION: ");
-					String sat2 = inp.readLine();
-
-					HashMap<String, Boolean> processed1 = new HashMap<>();
+				    codes = printCodelist();
+					MyPair p= returnStations(codes, inp);
+					String sat1 = p.source;
+					String sat2 = p.dest;
 					System.out.println("SHORTEST TIME FROM (" + sat1 + ") TO (" + sat2 + ") IS "
 							+ g.dijkstra(sat1, sat2, true) / 60 + " MINUTES\n\n");
 					break;
 
 				case 5:
-					System.out.println("ENTER THE SOURCE AND DESTINATION STATIONS");
-					String s1 = inp.readLine();
-					String s2 = inp.readLine();
-
-					HashMap<String, Boolean> processed2 = new HashMap<>();
-					if (!g.containsVertex(s1) || !g.containsVertex(s2) || !g.hasPath(s1, s2, processed2))
+					codes = printCodelist();
+					p= returnStations(codes, inp);
+					sat1 = p.source;
+					sat2 = p.dest;
+					HashMap<String, Boolean> processed1 = new HashMap<>();
+					if (!g.containsVertex(sat1) || !g.containsVertex(sat2) || !g.hasPath(sat1, sat2, processed1))
 						System.out.println("THE INPUTS ARE INVALID");
 					else {
-						ArrayList<String> str = g.get_Interchanges(g.Get_Minimum_Distance(s1, s2));
+						ArrayList<String> str = g.get_Interchanges(g.Get_Minimum_Distance(sat1, sat2));
 						int len = str.size();
-						System.out.println("SOURCE STATION : " + s1);
-						System.out.println("SOURCE STATION : " + s2);
+						System.out.println("SOURCE STATION : " + sat1);
+						System.out.println("SOURCE STATION : " + sat2);
 						System.out.println("DISTANCE : " + str.get(len - 1));
 						System.out.println("NUMBER OF INTERCHANGES : " + str.get(len - 2));
 						// System.out.println(str);
